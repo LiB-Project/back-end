@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: libapp
+  data:
+    elasticsearch:
+      cluster-name: elasticsearch-cluster
+      cluster-nodes: 127.0.0.1:9300
+#      cluster-nodes: 165.227.191.103:9300
+
+server:
+  port: 8080
+
+security:
+  jwt:
+    uri: "/api/authorize"
+    header: "Authorization"
+    prefix: "Bearer "
+    expiration: 6 #in hours
+    secret: "thisIsASecretKey"
+
+configuracao:
+  diretorio-documentos: "/home/lyndemberg/lib-documents"
+  tituloSistema: "LiB"
+  quantidadeNuvemDePalavras: 25
+  icon: "icon.png"
+  favicon: "favicon.ico"
+  logomarca: "logomarca.png"
+  html-sobre: "sobre.html"
+  nome-instituicao: "Instituto Federal da Paraíba"
+  sigla-instituicao: "IFPB - Campus Cajazeiras"
+
+analyzer:
+  server:
+    host: "localhost"
+    port: 50051
