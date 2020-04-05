@@ -2,9 +2,12 @@ package br.edu.ifpb.lib.service;
 
 import br.edu.ifpb.lib.domain.AreaBasica;
 import br.edu.ifpb.lib.domain.Documento;
+import br.edu.ifpb.lib.domain.DocumentoAcessos;
 import br.edu.ifpb.lib.domain.SubArea;
+import br.edu.ifpb.lib.repository.DocumentoAcessosRepository;
 import br.edu.ifpb.lib.repository.DocumentoRepository;
 import br.edu.ifpb.lib.web.valueobject.AreaEstatisticaVO;
+import br.edu.ifpb.lib.web.valueobject.DocumentoAcessosVO;
 import br.edu.ifpb.lib.web.valueobject.LevantamentoVO;
 import br.edu.ifpb.lib.web.valueobject.SubAreaQuantidade;
 import lombok.extern.log4j.Log4j2;
@@ -31,13 +34,15 @@ public class EstatisticaService {
     private final GrandeAreaService grandeAreaService;
     private final SubAreaService subAreaService;
     private final AreaBasicaService areaBasicaService;
+    private final DocumentoAcessosRepository documentoAcessosRepository;
 
-    public EstatisticaService(DocumentoRepository documentoRepository, ElasticsearchTemplate elasticsearchTemplate, GrandeAreaService grandeAreaService, SubAreaService subAreaService, AreaBasicaService areaBasicaService) {
+    public EstatisticaService(DocumentoRepository documentoRepository, ElasticsearchTemplate elasticsearchTemplate, GrandeAreaService grandeAreaService, SubAreaService subAreaService, AreaBasicaService areaBasicaService, DocumentoAcessosRepository documentoAcessosRepository) {
         this.documentoRepository = documentoRepository;
         this.elasticsearchTemplate = elasticsearchTemplate;
         this.grandeAreaService = grandeAreaService;
         this.subAreaService = subAreaService;
         this.areaBasicaService = areaBasicaService;
+        this.documentoAcessosRepository = documentoAcessosRepository;
     }
 
     public int buscarAnoInferiorDeDocumentos(){
@@ -91,6 +96,40 @@ public class EstatisticaService {
         }
 
         return levantamentoVOList;
+    }
+
+    public List<DocumentoAcessosVO> documentoAcessosList(){
+        Iterable<DocumentoAcessos> all = this.documentoAcessosRepository.findAll();
+        List<DocumentoAcessosVO> voList = new ArrayList<>();
+
+        all.forEach(entity -> {
+            Documento documento = documentoRepository.findById(entity.getId()).get();
+            DocumentoAcessosVO build = DocumentoAcessosVO.builder()
+                    .id(entity.getId())
+                    .titulo(documento.getTitulo())
+                    .quantidadeAcessos(entity.getAcessos())
+                    .build();
+            voList.add(build);
+        });
+        return voList.stream()
+                .limit(10)
+                .sorted((o1, o2) -> Long.compare(o2.getQuantidadeAcessos(), o1.getQuantidadeAcessos()))
+                .collect(Collectors.toList());
+    }
+
+    public void countNovoAcesso(String idDocument){
+        Optional<DocumentoAcessos> byId = documentoAcessosRepository.findById(idDocument);
+        DocumentoAcessos acessos = null;
+
+        if(byId.isPresent()){
+            acessos = byId.get();
+        }else{
+            acessos = new DocumentoAcessos();
+            acessos.setId(idDocument);
+        }
+
+        acessos.setAcessos(acessos.getAcessos() + 1);
+        documentoAcessosRepository.save(acessos);
     }
 
     public List<AreaEstatisticaVO> buscarEstatisticaDeGrandeArea(Long codigoGrandeArea) {

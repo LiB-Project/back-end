@@ -2,15 +2,14 @@ package br.edu.ifpb.lib.web;
 
 import br.edu.ifpb.lib.service.EstatisticaService;
 import br.edu.ifpb.lib.web.valueobject.AreaEstatisticaVO;
+import br.edu.ifpb.lib.web.valueobject.DocumentoAcessosVO;
 import br.edu.ifpb.lib.web.valueobject.LevantamentoVO;
 import br.edu.ifpb.lib.web.valueobject.SubAreaQuantidade;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.xml.ws.Response;
 import java.util.List;
@@ -36,6 +35,18 @@ public class EstatisticaController {
                                                                               @Param("anoSuperior") int anoSuperior,
                                                                               @Param("cursoId") String cursoId) {
         return ResponseEntity.ok(estatisticaService.fazerLevantamento(anoInferior, anoSuperior, cursoId));
+    }
+
+    @GetMapping("/acessos")
+    public ResponseEntity<List<DocumentoAcessosVO>> listarDocumentosMaisAcessados(){
+        List<DocumentoAcessosVO> documentoAcessosVOS = estatisticaService.documentoAcessosList();
+        return ResponseEntity.ok(documentoAcessosVOS);
+    }
+
+    @PostMapping("/acesso/{idDocument}")
+    public ResponseEntity<Void> novoAcesso(@PathVariable String idDocument){
+        estatisticaService.countNovoAcesso(idDocument);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("area")
