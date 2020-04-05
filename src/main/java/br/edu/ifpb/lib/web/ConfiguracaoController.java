@@ -39,6 +39,12 @@ public class ConfiguracaoController {
         }
     }
 
+    @PostMapping("/restaurar")
+    public ResponseEntity<Void> restaurarConfiguracao() {
+        configuracaoService.restaurar();
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/tituloSistema")
     public ResponseEntity<String> recuperarTituloSistema(){
         try {
