@@ -140,4 +140,5 @@ public class DocumentoController {
         documentoService.lerEatualizarTodos();
         return ResponseEntity.ok(null);
     }
+
 }

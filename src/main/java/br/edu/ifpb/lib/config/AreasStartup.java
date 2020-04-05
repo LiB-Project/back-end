@@ -1,5 +1,7 @@
 package br.edu.ifpb.lib.config;
 
+import br.edu.ifpb.lib.domain.Documento;
+import br.edu.ifpb.lib.repository.DocumentoRepository;
 import br.edu.ifpb.lib.repository.SubAreaRepository;
 import br.edu.ifpb.lib.util.ReadJSON;
 import lombok.extern.slf4j.Slf4j;
@@ -16,12 +18,14 @@ public class AreasStartup implements ApplicationListener<ContextRefreshedEvent> 
     private final GrandeAreaRepository grandeAreaRepository;
     private final AreaBasicaRepository areaBasicaRepository;
     private final SubAreaRepository subAreaRepository;
+    private final DocumentoRepository documentoRepository;
 
-    public AreasStartup(ReadJSON readJSON, GrandeAreaRepository grandeAreaRepository, AreaBasicaRepository areaBasicaRepository, SubAreaRepository subAreaRepository) {
+    public AreasStartup(ReadJSON readJSON, GrandeAreaRepository grandeAreaRepository, AreaBasicaRepository areaBasicaRepository, SubAreaRepository subAreaRepository, DocumentoRepository documentoRepository) {
         this.json = readJSON;
         this.grandeAreaRepository = grandeAreaRepository;
         this.areaBasicaRepository = areaBasicaRepository;
         this.subAreaRepository = subAreaRepository;
+        this.documentoRepository = documentoRepository;
     }
 
     @Override

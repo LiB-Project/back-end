@@ -15,6 +15,7 @@ import br.edu.ifpb.lib.service.exceptions.ErroAoLerTextoException;
 import br.edu.ifpb.lib.service.exceptions.ErroAoSalvarArquivoException;
 import br.edu.ifpb.lib.service.grpc.AnalyzerClient;
 import br.edu.ifpb.lib.web.valueobject.DocumentoVO;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -34,10 +35,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -78,6 +82,7 @@ public class DocumentoService {
             String text = new PDFTextStripper().getText(load);
             load.close();
             entity.setConteudo(text);
+            entity.setResumo(extractResumo(text));
         } catch (IOException e) {
             throw new ErroAoLerTextoException(String.format("Não foi possível extrair o conteúdo textual do documento"));
         }
@@ -180,7 +185,17 @@ public class DocumentoService {
         vo.setDataApresentacao(entity.getDataApresentacao());
         vo.setDataPublicacao(entity.getDataPublicacao());
         vo.setIsbn(entity.getIsbn());
-        vo.setScore(entity.get_score());
+        vo.setResumo(entity.getResumo());
+
+        try {
+            File file = new File(entity.getPathArquivo());
+            byte[] bytes = new byte[0];
+            bytes = Files.readAllBytes(file.toPath());
+            vo.setArquivo(bytes);
+            vo.setArquivoBase64(Base64.encodeBase64String(bytes));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         try {
             vo.setOrientador(orientadorService.buscarPorId(entity.getOrientadorId()));
@@ -239,6 +254,18 @@ public class DocumentoService {
         Page<Documento> page = documentoRepository.search(nativeSearchQueryBuilder.build());
 
         return page.map(this::toValue);
+    }
+
+    private String extractResumo(String conteudo){
+        String resumo = null;
+        Pattern pattern = Pattern.compile("(RESUMO+[\\s\\S]+ABSTRACT)");
+        Matcher matcher = pattern.matcher(conteudo);
+        if(matcher.find()){
+            String[] splitResumoMarker = matcher.group().split("(RESUMO)");
+            String[] splitAbstractMarker = String.join("",splitResumoMarker).split("(ABSTRACT)");
+            resumo = String.join("", splitAbstractMarker);
+        }
+        return resumo;
     }
 //    byte[] bytes = new byte[0];
 //        try {

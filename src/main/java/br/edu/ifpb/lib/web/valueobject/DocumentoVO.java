@@ -28,6 +28,7 @@ public class DocumentoVO implements Serializable {
     private String id;
     private String titulo;
     private Autor autor;
+    private String resumo;
     private CursoVO curso;
     private Orientador orientador;
     private Orientador coorientador;
@@ -41,5 +42,6 @@ public class DocumentoVO implements Serializable {
     private List<String> palavrasChave;
     private String isbn;
     private byte[] arquivo;
+    pprivate String arquivoBase64;
     private Double score;
 }

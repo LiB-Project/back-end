@@ -8,7 +8,10 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Getter
 @Setter
@@ -21,6 +24,7 @@ public class Documento {
     private Autor autor;
     private String cursoId;
     private String conteudo;
+    private String resumo;
     private LocalDate dataApresentacao;
     private LocalDateTime dataPublicacao;
     private int anoPublicacao;
@@ -30,7 +34,6 @@ public class Documento {
     private List<Long> subAreasId = new ArrayList<>();
     private List<String> palavrasChave = new ArrayList<>();
     private String pathArquivo;
-    private Double _score;
 
     public void set_score(Double _score) {
     }
