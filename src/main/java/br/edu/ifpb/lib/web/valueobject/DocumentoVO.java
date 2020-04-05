@@ -42,6 +42,6 @@ public class DocumentoVO implements Serializable {
     private List<String> palavrasChave;
     private String isbn;
     private byte[] arquivo;
-    pprivate String arquivoBase64;
+    private String arquivoBase64;
     private Double score;
 }
