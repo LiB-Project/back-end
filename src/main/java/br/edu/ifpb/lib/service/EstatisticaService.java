@@ -45,38 +45,18 @@ public class EstatisticaService {
         this.documentoAcessosRepository = documentoAcessosRepository;
     }
 
-    public int buscarAnoInferiorDeDocumentos(){
-        Sort sortDataPublicacao = Sort.by(Sort.Direction.ASC, "anoPublicacao");
-        PageRequest pageable = PageRequest.of(0, 1, sortDataPublicacao);
-        Page<Documento> all = documentoRepository.findAll(pageable);
-        Documento documento = all.getContent().get(0);
-        if(documento != null)
-            return documento.getAnoPublicacao();
-        else
-            return Year.now().getValue();
+    private List<Integer> readAnos(){
+        List<Integer> anoList = new ArrayList<>();
+
+        documentoRepository.findAll().forEach(doc -> anoList.add(doc.getAnoPublicacao()));
+
+        return anoList;
     }
 
-    public int buscarAnoSuperiorDeDocumentos(){
-        Sort sortDataPublicacao = Sort.by(Sort.Direction.DESC, "anoPublicacao");
-        PageRequest pageable = PageRequest.of(0, 1, sortDataPublicacao);
-        Page<Documento> all = documentoRepository.findAll(pageable);
-        Documento documento = all.getContent().get(0);
-        if(documento != null)
-            return documento.getAnoPublicacao();
-        else
-            return Year.now().getValue();
-    }
+
 
     public List<Integer> buscarListaDeAnosDisponiveis(){
-        List<Integer> anoList = new ArrayList<>();
-        int inferior = buscarAnoInferiorDeDocumentos();
-        int superior = buscarAnoSuperiorDeDocumentos();
-
-        for(int ano = inferior; ano <= superior; ano++){
-            anoList.add(ano);
-        }
-
-            return anoList;
+        return readAnos().stream().distinct().collect(Collectors.toList());
     }
 
     public List<LevantamentoVO> fazerLevantamento(int anoInferior, int anoSuperior, String cursoId) {

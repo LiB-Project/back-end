@@ -35,9 +35,6 @@ public class Documento {
     private List<String> palavrasChave = new ArrayList<>();
     private String pathArquivo;
 
-    public void set_score(Double _score) {
-    }
-
     public void setAnoPublicacao(int anoPublicacao) {
         this.anoPublicacao = this.getDataApresentacao().getYear();
     }
