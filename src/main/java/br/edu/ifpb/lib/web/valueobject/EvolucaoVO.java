@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AreaEstatisticaVO {
-    private String areaBasica;
-    private List<SubAreaQuantidade> subAreaQuantidadeList;
+public class EvolucaoVO {
+    private List<LevantamentoVO> levantamentoList;
+    private List<AreaEstatisticaVO> areaEstatisticaList;
 }

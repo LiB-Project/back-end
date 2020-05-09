@@ -17,7 +17,10 @@ public interface DocumentoRepository extends ElasticsearchRepository<Documento, 
     Page<Documento> findAllByCursoId(Pageable pageable, String cursoId);
     Page<Documento> findAllByCursoIdIn(Pageable pageable, List<String> cursoId);
     Page<Documento> findAllByOrientadorIdIn(Pageable pageable, List<String> orientadorId);
+    List<Documento> findAllByOrientadorId(String orientadorId);
     int countAllByAnoPublicacaoEquals(int anoPublicacao);
+    List<Documento> findAllByAnoPublicacaoEquals(int anoPublicacao);
     int countAllByCursoIdEqualsAndAnoPublicacaoEquals(String cursoId, int anoPublicacao);
+    List<Documento> findAllByCursoIdEqualsAndAnoPublicacaoEquals(String cursoId, int anoPublicacao);
     int countBySubAreasIdIsContaining(List<Long> subAreasId);
 }

@@ -1,11 +1,13 @@
 package br.edu.ifpb.lib.web;
 
+import br.edu.ifpb.lib.domain.NivelCurso;
 import br.edu.ifpb.lib.service.OrientadorService;
 import br.edu.ifpb.lib.service.exceptions.EntidadeExistenteException;
 import br.edu.ifpb.lib.domain.Orientador;
 import br.edu.ifpb.lib.web.util.PaginationUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,7 +64,6 @@ public class OrientadorController {
     }
 
     @GetMapping("/all")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_USER')")
     public ResponseEntity<List<Orientador>> listar(){
         List<Orientador> listar = orientadorService.listar();
         return ResponseEntity.ok(listar);

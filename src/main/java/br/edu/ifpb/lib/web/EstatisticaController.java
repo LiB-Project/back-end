@@ -1,10 +1,7 @@
 package br.edu.ifpb.lib.web;
 
 import br.edu.ifpb.lib.service.EstatisticaService;
-import br.edu.ifpb.lib.web.valueobject.AreaEstatisticaVO;
-import br.edu.ifpb.lib.web.valueobject.DocumentoAcessosVO;
-import br.edu.ifpb.lib.web.valueobject.LevantamentoVO;
-import br.edu.ifpb.lib.web.valueobject.SubAreaQuantidade;
+import br.edu.ifpb.lib.web.valueobject.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
@@ -30,10 +27,10 @@ public class EstatisticaController {
         return ResponseEntity.ok(estatisticaService.buscarListaDeAnosDisponiveis());
     }
 
-    @GetMapping("/levantamento")
-    public ResponseEntity<List<LevantamentoVO>> fazerLevantamentoDeDocumentos(@Param("anoInferior") int anoInferior,
-                                                                              @Param("anoSuperior") int anoSuperior,
-                                                                              @Param("cursoId") String cursoId) {
+    @GetMapping("/evolucao")
+    public ResponseEntity<EvolucaoVO> fazerLevantamentoDeDocumentos(@Param("anoInferior") int anoInferior,
+                                                                    @Param("anoSuperior") int anoSuperior,
+                                                                    @Param("cursoId") String cursoId) {
         return ResponseEntity.ok(estatisticaService.fazerLevantamento(anoInferior, anoSuperior, cursoId));
     }
 
@@ -57,4 +54,11 @@ public class EstatisticaController {
             return ResponseEntity.ok(estatisticaService.buscarEstatisticaDeGrandeArea(grandeArea));
         }
     }
+
+    @GetMapping("orientador")
+    public ResponseEntity<List<AreaEstatisticaVO>> getEstatisticaPorOrientador(@Param("id") String id) {
+        return ResponseEntity.ok(estatisticaService.buscarEstatisticaPorOrientador(id));
+    }
+
+
 }

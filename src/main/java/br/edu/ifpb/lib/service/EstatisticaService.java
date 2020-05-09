@@ -6,11 +6,9 @@ import br.edu.ifpb.lib.domain.DocumentoAcessos;
 import br.edu.ifpb.lib.domain.SubArea;
 import br.edu.ifpb.lib.repository.DocumentoAcessosRepository;
 import br.edu.ifpb.lib.repository.DocumentoRepository;
-import br.edu.ifpb.lib.web.valueobject.AreaEstatisticaVO;
-import br.edu.ifpb.lib.web.valueobject.DocumentoAcessosVO;
-import br.edu.ifpb.lib.web.valueobject.LevantamentoVO;
-import br.edu.ifpb.lib.web.valueobject.SubAreaQuantidade;
+import br.edu.ifpb.lib.web.valueobject.*;
 import lombok.extern.log4j.Log4j2;
+import org.elasticsearch.index.query.Operator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -24,6 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
+import static org.elasticsearch.index.query.QueryBuilders.multiMatchQuery;
 
 @Service
 @Log4j2
@@ -59,23 +58,59 @@ public class EstatisticaService {
         return readAnos().stream().distinct().collect(Collectors.toList());
     }
 
-    public List<LevantamentoVO> fazerLevantamento(int anoInferior, int anoSuperior, String cursoId) {
-        List<LevantamentoVO> levantamentoVOList = new ArrayList<>();
+    public EvolucaoVO fazerLevantamento(int anoInferior, int anoSuperior, String cursoId) {
+        EvolucaoVO evolucaoVO = new EvolucaoVO();
 
+        Set<Documento> documentAllList = new HashSet<>();
+
+        List<LevantamentoVO> levantamentoVOList = new ArrayList<>();
         for(int ano = anoInferior; ano <= anoSuperior; ano++) {
             LevantamentoVO levantamentoVO = new LevantamentoVO();
             levantamentoVO.setAno(ano);
-            int count;
+            List<Documento> documentoList;
             if (cursoId.equalsIgnoreCase("Todos")) {
-                count = documentoRepository.countAllByAnoPublicacaoEquals(ano);
+                documentoList = documentoRepository.findAllByAnoPublicacaoEquals(ano);
             } else {
-                count = documentoRepository.countAllByCursoIdEqualsAndAnoPublicacaoEquals(cursoId, ano);
+                documentoList = documentoRepository.findAllByCursoIdEqualsAndAnoPublicacaoEquals(cursoId, ano);
             }
-            levantamentoVO.setQuantidade(count);
+            levantamentoVO.setQuantidade(documentoList.size());
             levantamentoVOList.add(levantamentoVO);
+
+            documentAllList.addAll(documentoList);
         }
 
-        return levantamentoVOList;
+        List<AreaEstatisticaVO> areaEstatisticaVOList =
+                this.generateAreaEstatisticasByDocumentList(new ArrayList<>(documentAllList));
+
+        evolucaoVO.setLevantamentoList(levantamentoVOList);
+        evolucaoVO.setAreaEstatisticaList(areaEstatisticaVOList);
+
+        return evolucaoVO;
+    }
+
+    private List<AreaEstatisticaVO> generateAreaEstatisticasByDocumentList(List<Documento> documentList) {
+        Set<Long> subAreaSet = new HashSet<>();
+        documentList.stream().forEach(doc -> subAreaSet.addAll(doc.getSubAreasId()));
+
+        Set<Long> areaBasicaSet = new HashSet<>();
+
+        List<SubAreaQuantidade> subAreaQuantidadeList = new ArrayList<>();
+        subAreaSet.stream().forEach(subAreaId -> {
+            SubArea subArea = subAreaService.buscarPorCodigo(subAreaId).get();
+            Long count = documentList.stream().filter(doc -> doc.getSubAreasId().contains(subAreaId)).count();
+            if(count > 0) {
+                areaBasicaSet.add(subArea.getAreaBasica());
+                subAreaQuantidadeList.add(new SubAreaQuantidade(subArea, Integer.valueOf(count.toString())));
+            }
+        });
+
+        return areaBasicaSet.stream().map(area -> {
+            String nomeArea = areaBasicaService.buscarPorCodigo(area).get().getNome();
+            List<SubAreaQuantidade> subAreaQuantidades = subAreaQuantidadeList.stream()
+                    .filter(subAreaQuantidade -> subAreaQuantidade.getSubArea().getAreaBasica().equals(area))
+                    .collect(Collectors.toList());
+            return new AreaEstatisticaVO(nomeArea, subAreaQuantidades);
+        }).collect(Collectors.toList());
     }
 
     public List<DocumentoAcessosVO> documentoAcessosList(){
@@ -161,5 +196,36 @@ public class EstatisticaService {
         });
 
         return areaEstatisticaVOList;
+    }
+
+    public List<AreaEstatisticaVO> buscarEstatisticaPorOrientador(String idOrientador) {
+        SearchQuery searchQueryOrientador = new NativeSearchQueryBuilder()
+                .withIndices("documento")
+                .withQuery(multiMatchQuery(idOrientador, "orientadorId","coorientadorId"))
+                .build();
+        List<Documento> documentosList = elasticsearchTemplate.queryForList(searchQueryOrientador, Documento.class);
+
+        Set<Long> subAreaSet = new HashSet<>();
+        documentosList.stream().forEach(doc -> subAreaSet.addAll(doc.getSubAreasId()));
+
+        Set<Long> areaBasicaSet = new HashSet<>();
+
+        List<SubAreaQuantidade> subAreaQuantidadeList = new ArrayList<>();
+        subAreaSet.stream().forEach(subAreaId -> {
+            SubArea subArea = subAreaService.buscarPorCodigo(subAreaId).get();
+            Long count = documentosList.stream().filter(doc -> doc.getSubAreasId().contains(subAreaId)).count();
+            if(count > 0) {
+                areaBasicaSet.add(subArea.getAreaBasica());
+                subAreaQuantidadeList.add(new SubAreaQuantidade(subArea, Integer.valueOf(count.toString())));
+            }
+        });
+
+        return areaBasicaSet.stream().map(area -> {
+            String nomeArea = areaBasicaService.buscarPorCodigo(area).get().getNome();
+            List<SubAreaQuantidade> subAreaQuantidades = subAreaQuantidadeList.stream()
+                    .filter(subAreaQuantidade -> subAreaQuantidade.getSubArea().getAreaBasica().equals(area))
+                    .collect(Collectors.toList());
+            return new AreaEstatisticaVO(nomeArea, subAreaQuantidades);
+        }).collect(Collectors.toList());
     }
 }
