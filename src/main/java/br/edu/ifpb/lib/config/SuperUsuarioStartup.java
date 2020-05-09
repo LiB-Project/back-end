@@ -15,19 +15,21 @@ import java.util.Arrays;
 @Slf4j
 public class SuperUsuarioStartup implements ApplicationListener<ContextRefreshedEvent>{
 
+    private final SuperUsuarioDefaultProperties superUsuarioDefaultProperties;
     private final UserService userService;
 
-    public SuperUsuarioStartup(UserService userService) {
+    public SuperUsuarioStartup(SuperUsuarioDefaultProperties superUsuarioDefaultProperties, UserService userService) {
+        this.superUsuarioDefaultProperties = superUsuarioDefaultProperties;
         this.userService = userService;
     }
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
         Usuario usuario = new Usuario();
-        usuario.setLogin("super-usuario");
-        usuario.setSenha("a1a2a3lib");
+        usuario.setLogin(superUsuarioDefaultProperties.getSuperUsuarioLogin());
+        usuario.setSenha(superUsuarioDefaultProperties.getSuperUsuarioSenha());
         usuario.setRoles(Arrays.asList(Role.ROLE_SUPER_USER));
-        usuario.setNome("Super Usuário");
+        usuario.setNome(superUsuarioDefaultProperties.getSuperUsuarioNome());
 
         try {
             log.info("DEFININDO SUPER USUÁRIO DEFAULT NO SISTEMA");

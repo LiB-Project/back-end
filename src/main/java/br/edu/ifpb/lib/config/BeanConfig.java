@@ -15,4 +15,7 @@ public class BeanConfig {
     @Bean
     public ConfiguracaoProperties provideConfiguracaoProperties() { return new ConfiguracaoProperties(); }
 
+    @Bean
+    public SuperUsuarioDefaultProperties provideSuperUsuarioDefaultProperties() { return new SuperUsuarioDefaultProperties(); }
+
 }
